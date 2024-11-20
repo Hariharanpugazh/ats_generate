@@ -1,0 +1,39 @@
+.resume-form {
+  max-width: 800px;
+  margin: auto;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.sub-section {
+  margin-bottom: 10px;
+}
+
+input, textarea, button, select {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
