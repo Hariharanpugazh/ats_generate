@@ -60,13 +60,40 @@ function ResumeForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      alert('Form submitted successfully!');
-      console.log(formData);
+      try {
+        const response = await fetch("http://127.0.0.1:8000/resume/save-user-info/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+  
+        if (response.ok) {
+          alert("Form submitted successfully!");
+          setFormData({
+            personalInfo: { name: "", email: "", phone: "", address: "" },
+            professionalSummary: "",
+            education: [{ degree: "", institution: "", year: "" }],
+            experience: [{ role: "", company: "", duration: "" }],
+            projects: [{ title: "", description: "", duration: "" }],
+            skills: [],
+            fresherOrProfessional: "",
+            yearsOfExperience: "",
+          });
+        } else {
+          const errorData = await response.json();
+          alert("Error: " + errorData.error);
+        }
+      } catch (error) {
+        alert("Error: Unable to submit form. " + error.message);
+      }
     }
-  };
+  };  
+  
 
   return (
     <div className="container mt-5">
