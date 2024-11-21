@@ -43,7 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'resume',  # Resume app
-    'corsheaders',  # To handle CORS
+    'corsheaders',
+    'accounts',
+  # To handle CORS
 ]
 
 MIDDLEWARE = [
@@ -84,14 +86,15 @@ WSGI_APPLICATION = 'ats_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'ATSResumeDB',  # MongoDB database name
-        'ENFORCE_SCHEMA': False,
+        'NAME': 'users_db',  # The database you created on MongoDB Atlas
         'CLIENT': {
-            'host': 'localhost',
-            'port': 27017,
-        }
+            'host': 'mongodb+srv://user:pass@cluster0.kifg5.mongodb.net/',  # Your MongoDB URI
+            'username': '',  # Replace with your MongoDB Atlas username
+            'password': '',  # Replace with your MongoDB Atlas password
+        },
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

@@ -1,0 +1,63 @@
+/* Resume container */
+.resume-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "Arial", sans-serif;
+  color: #333;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Section */
+.resume-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.resume-header h1 {
+  font-size: 32px;
+  margin: 0;
+}
+
+.resume-header p {
+  font-size: 14px;
+  color: #666;
+  margin: 5px 0 0;
+  word-wrap: break-word; /* Ensure long emails/links etc wrap */
+}
+
+/* Section Titles */
+.resume-section h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+/* Section Content */
+.resume-section p,
+.resume-section li {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  word-wrap: break-word; /* Adds wrapping to content */
+  overflow-wrap: break-word; /* Ensures overflow text is handled */
+}
+
+/* Skills List */
+.skills-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.skills-list li {
+  margin-right: 10px;
+  background: #f0f0f0;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+}
