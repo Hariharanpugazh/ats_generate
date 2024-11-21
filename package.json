@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "html2pdf": "^0.0.11",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
+    "react-router-dom": "^6.28.0",
+    "react-select": "^5.8.3",
+    "react-to-pdf": "^1.0.1"
+  }
+}

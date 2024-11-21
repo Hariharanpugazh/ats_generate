@@ -1,0 +1,135 @@
+/* Basic reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Resume container styling */
+.resume-container {
+  max-width: 8.5in; /* Standard letter size */
+  margin: 0 auto;
+  padding: 1in;
+  background-color: #fff;
+  color: #333;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.resume-container.dark {
+  background-color: #333;
+  color: #fff;
+}
+
+/* Header section styling */
+.resume-header {
+  text-align: center;
+  margin-bottom: 0.5in;
+}
+
+.resume-header h1 {
+  font-size: 22pt;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.1in;
+}
+
+.resume-container.dark .resume-header h1 {
+  color: #fff;
+}
+
+.resume-header p {
+  font-size: 12pt;
+  color: #555;
+}
+
+.resume-container.dark .resume-header p {
+  color: #ccc;
+}
+
+/* Section headers */
+.resume-section h2 {
+  font-size: 16pt;
+  font-weight: bold;
+  color: #333;
+  margin-top: 0.3in;
+  margin-bottom: 0.1in;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.05in;
+}
+
+.resume-container.dark .resume-section h2 {
+  color: #fff;
+  border-color: #555;
+}
+
+/* List items */
+.resume-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.resume-section li {
+  font-size: 12pt;
+  margin-bottom: 0.15in;
+  line-height: 1.4;
+}
+
+/* Emphasize skills and important points */
+.resume-section strong {
+  font-weight: bold;
+  color: #333;
+}
+
+.resume-container.dark .resume-section strong {
+  color: #fff;
+}
+
+/* Keyword styling */
+.keyword {
+  font-weight: bold;
+  color: #2980b9;
+}
+
+.resume-container.dark .keyword {
+  color: #7fb3d5;
+}
+
+/* Download, Print, and Theme buttons */
+.download-btn, .print-btn, .theme-btn {
+  background-color: #2980b9;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-top: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.resume-container.dark .download-btn, .resume-container.dark .print-btn, .resume-container.dark .theme-btn {
+  background-color: #2980b9;
+  color: #fff;
+}
+
+.download-btn:hover, .print-btn:hover, .theme-btn:hover {
+  background-color: #2471a3;
+}
+
+/* Printing styles */
+@media print {
+  .resume-container {
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .download-btn, .print-btn, .theme-btn {
+    display: none;
+  }
+}
