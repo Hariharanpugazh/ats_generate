@@ -1,135 +1,94 @@
-/* Basic reset */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Arial', sans-serif;
-}
-
-/* Resume container styling */
+/* Compact resume container for a single page */
 .resume-container {
-  max-width: 8.5in; /* Standard letter size */
+  width: 210mm; /* Standard A4 width */
+  height: 297mm; /* Standard A4 height */
+  padding: 10mm; /* Reduce padding to maximize space */
   margin: 0 auto;
-  padding: 1in;
-  background-color: #fff;
-  color: #333;
-  transition: background-color 0.3s, color 0.3s;
+  background: #fff;
+  color: #000;
+  font-size: 10pt; /* Reduce font size for compactness */
+  line-height: 1.2; /* Reduce line spacing */
 }
 
-.resume-container.dark {
-  background-color: #333;
-  color: #fff;
-}
-
-/* Header section styling */
-.resume-header {
-  text-align: center;
-  margin-bottom: 0.5in;
-}
-
+/* Header section */
 .resume-header h1 {
-  font-size: 22pt;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 0.1in;
-}
-
-.resume-container.dark .resume-header h1 {
-  color: #fff;
+  font-size: 16pt; /* Reduce header font size */
+  margin-bottom: 5px; /* Reduce spacing */
 }
 
 .resume-header p {
-  font-size: 12pt;
-  color: #555;
-}
-
-.resume-container.dark .resume-header p {
-  color: #ccc;
+  font-size: 10pt; /* Reduce subheader font size */
+  margin-bottom: 5px;
 }
 
 /* Section headers */
 .resume-section h2 {
-  font-size: 16pt;
-  font-weight: bold;
-  color: #333;
-  margin-top: 0.3in;
-  margin-bottom: 0.1in;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 0.05in;
-}
-
-.resume-container.dark .resume-section h2 {
-  color: #fff;
-  border-color: #555;
+  font-size: 12pt; /* Smaller section headers */
+  margin-bottom: 5px; /* Reduce spacing below headers */
+  border-bottom: 1px solid #ddd; /* Optional divider */
+  padding-bottom: 3px; /* Reduce padding */
 }
 
 /* List items */
 .resume-section ul {
-  list-style-type: none;
-  padding: 0;
+  margin-top: 5px; /* Reduce space between lists */
+  padding-left: 15px; /* Compact indentation */
 }
 
 .resume-section li {
-  font-size: 12pt;
-  margin-bottom: 0.15in;
-  line-height: 1.4;
+  font-size: 10pt; /* Adjust font size */
+  line-height: 1.2; /* Compact line spacing */
+  margin-bottom: 5px; /* Reduce space between list items */
 }
 
-/* Emphasize skills and important points */
-.resume-section strong {
-  font-weight: bold;
-  color: #333;
+/* Skills as inline list */
+.skills-list {
+  display: flex; /* Arrange skills in a row */
+  flex-wrap: wrap; /* Wrap skills to the next line if needed */
+  gap: 5px; /* Reduce gap between skills */
 }
 
-.resume-container.dark .resume-section strong {
-  color: #fff;
+.skills-list li {
+  border: 1px solid #ccc; /* Optional border for skills */
+  padding: 3px 5px; /* Compact padding */
+  border-radius: 3px;
+  background-color: #f9f9f9;
+  font-size: 9pt;
 }
 
-/* Keyword styling */
-.keyword {
-  font-weight: bold;
-  color: #2980b9;
+/* Adjust spacing for sections */
+.resume-section {
+  margin-bottom: 10px; /* Reduce spacing between sections */
 }
 
-.resume-container.dark .keyword {
-  color: #7fb3d5;
-}
-
-/* Download, Print, and Theme buttons */
-.download-btn, .print-btn, .theme-btn {
-  background-color: #2980b9;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin-top: 20px;
-  cursor: pointer;
-  border-radius: 4px;
-  margin-right: 10px;
-}
-
-.resume-container.dark .download-btn, .resume-container.dark .print-btn, .resume-container.dark .theme-btn {
-  background-color: #2980b9;
-  color: #fff;
-}
-
-.download-btn:hover, .print-btn:hover, .theme-btn:hover {
-  background-color: #2471a3;
-}
-
-/* Printing styles */
+/* Printing styles for single-page PDF */
 @media print {
   .resume-container {
-    margin: 0;
-    padding: 0;
-    border: none;
-    box-shadow: none;
+    font-size: 10pt; /* Adjust font size */
+    line-height: 1.2; /* Compact line spacing */
+    padding: 5mm; /* Minimal padding for printing */
   }
 
-  .download-btn, .print-btn, .theme-btn {
-    display: none;
+  .resume-header h1 {
+    font-size: 14pt; /* Slightly smaller title */
+  }
+
+  .resume-section h2 {
+    font-size: 11pt; /* Smaller section headers */
+    margin-bottom: 5px;
+  }
+
+  .resume-section ul {
+    margin-top: 5px;
+    padding-left: 10px;
+  }
+
+  .resume-section li {
+    margin-bottom: 3px; /* Compact list spacing */
+  }
+
+  .skills-list li {
+    font-size: 9pt; /* Smaller skills font size */
+    padding: 2px 4px;
   }
 }

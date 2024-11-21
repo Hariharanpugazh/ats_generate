@@ -3,37 +3,91 @@ from django.http import JsonResponse
 from .models import UserInfo
 import json
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.hashers import make_password, check_password
 import logging
+from pymongo import MongoClient
 
+client = MongoClient("mongodb://localhost:27017/")
+db = client.ATSResumeDB  # Your MongoDB Database Name
+userinfo_collection = db.userinfo  # Collection name
+
+@csrf_exempt
+def register_user(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')  # Save password as plain text
+
+        # Check if email already exists
+        if userinfo_collection.find_one({'email': email}):
+            return JsonResponse({'error': 'Email already exists'}, status=400)
+
+        # Insert user into collection
+        userinfo_collection.insert_one({
+            'username': username,
+            'email': email,
+            'password': password,
+        })
+
+        return JsonResponse({'message': 'Registration successful'}, status=201)
+
+@csrf_exempt
+def login_user(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+
+        # Check user credentials
+        user = userinfo_collection.find_one({'email': email, 'password': password})
+        if user:
+            return JsonResponse({'message': 'Login successful'}, status=200)
+        else:
+            return JsonResponse({'error': 'Invalid email or password'}, status=401)
 
 @csrf_exempt
 def save_user_info(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        # Assuming you have new fields like certifications and achievements
-        certifications = data.get('certifications', [])
-        achievements = data.get('achievements', [])
-        languages = data.get('languages', [])
+        try:
+            data = json.loads(request.body)
 
-        # Existing code to create or update the rest of the user info
-        user_info, created = UserInfo.objects.update_or_create(
-            email=data['personalInfo']['email'],
-            defaults={
-                'full_name': data['personalInfo']['name'],
-                'phone': data['personalInfo']['phone'],
-                'address': data['personalInfo']['address'],
-                'professional_summary': data['professionalSummary'],
-                'fresher_or_professional': data['fresherOrProfessional'],
-                'education': data['education'],
-                'skills': ",".join([skill['label'] for skill in data.get('skills', [])]),
-                'projects': data['projects'],
-                'experience': data['experience'],
-                'certifications': certifications,
-                'achievements': achievements,
-                'languages': languages
-            }
-        )
-        return JsonResponse({'message': 'User info saved successfully'}, status=200)
+            # Extract fields from the request
+            personal_info = data.get('personalInfo', {})
+            email = personal_info.get('email')
+            full_name = personal_info.get('name', '')
+            phone = personal_info.get('phone', '')
+            address = personal_info.get('address', '')
+            certifications = data.get('certifications', [])
+            achievements = data.get('achievements', [])
+            languages = data.get('languages', [])
+            education = data.get('education', [])
+            projects = data.get('projects', [])
+            experience = data.get('experience', [])
+            skills = data.get('skills', [])
+
+            # Create a new UserInfo record
+            user_info = UserInfo.objects.create(
+                email=email,
+                full_name=full_name,
+                phone=phone,
+                address=address,
+                professional_summary=data.get('professionalSummary', ''),
+                fresher_or_professional=data.get('fresherOrProfessional', ''),
+                education=education,
+                skills=",".join([skill.get('label', '') for skill in skills]),
+                projects=projects,
+                experience=experience,
+                certifications=certifications,
+                achievements=achievements,
+                languages=languages
+            )
+
+            return JsonResponse({'message': 'User info saved successfully'}, status=201)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 def my_view(request):

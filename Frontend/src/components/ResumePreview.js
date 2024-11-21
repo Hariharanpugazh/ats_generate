@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import "./ResumePreview.css"; // Ensure this CSS file is styled to your preference
+import html2pdf from "html2pdf.js";
 
 function ResumePreview() {
   const [userData, setUserData] = useState(null);
@@ -27,30 +28,30 @@ function ResumePreview() {
   }, []);
 
   const downloadResume = () => {
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: "a4", // Standard A4 size
-    });
-
-    const content = document.querySelector(".resume-container");
+    const element = document.querySelector(".resume-container");
     const downloadButton = document.querySelector(".download-btn");
-
+  
     // Temporarily hide the download button
     downloadButton.style.display = "none";
-
-    pdf.html(content, {
-      callback: (doc) => {
-        doc.save("ATS_Resume.pdf");
-        // Restore the download button after generating the PDF
+  
+    const options = {
+      margin: [10, 10, 10, 10], // Margins [top, left, bottom, right] in mm
+      filename: "ATS_Resume.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
+  
+    html2pdf()
+      .set(options)
+      .from(element)
+      .save()
+      .then(() => {
+        // Restore the button after PDF generation
         downloadButton.style.display = "block";
-      },
-      x: 10,
-      y: 10,
-      html2canvas: { scale: 0.5 }, // Ensures proper scaling for A4
-    });
+      });
   };
-
+      
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -137,24 +138,24 @@ function ResumePreview() {
           )}
         </ul>
       </div>
+      <div className="resume-section page-break">
+        <h2>Projects</h2>
+        <ul>
+          {userData.projects && userData.projects.length > 0 ? (
+            userData.projects.map((project, index) => (
+              <li key={index}>
+                <strong>{project.title}</strong> - {project.duration}
+                <p>{project.description}</p>
+              </li>
+            ))
+          ) : (
+            <li>No projects listed.</li>
+          )}
+        </ul>
+      </div>
 
-      {userData.fresherOrProfessional === "fresher" && (
-        <div className="resume-section">
-          <h2>Projects</h2>
-          <ul>
-            {userData.projects && userData.projects.length > 0 ? (
-              userData.projects.map((project, index) => (
-                <li key={index}>
-                  <strong>{project.title}</strong> - {project.duration}
-                  <p>{project.description}</p>
-                </li>
-              ))
-            ) : (
-              <li>No projects listed.</li>
-            )}
-          </ul>
-        </div>
-      )}
+
+    
 
       {userData.fresherOrProfessional === "professional" && (
         <div className="resume-section">
