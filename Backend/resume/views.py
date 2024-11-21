@@ -9,31 +9,46 @@ import logging
 @csrf_exempt
 def save_user_info(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        # Assuming you have new fields like certifications and achievements
-        certifications = data.get('certifications', [])
-        achievements = data.get('achievements', [])
-        languages = data.get('languages', [])
+        try:
+            data = json.loads(request.body)
 
-        # Existing code to create or update the rest of the user info
-        user_info, created = UserInfo.objects.update_or_create(
-            email=data['personalInfo']['email'],
-            defaults={
-                'full_name': data['personalInfo']['name'],
-                'phone': data['personalInfo']['phone'],
-                'address': data['personalInfo']['address'],
-                'professional_summary': data['professionalSummary'],
-                'fresher_or_professional': data['fresherOrProfessional'],
-                'education': data['education'],
-                'skills': ",".join([skill['label'] for skill in data.get('skills', [])]),
-                'projects': data['projects'],
-                'experience': data['experience'],
-                'certifications': certifications,
-                'achievements': achievements,
-                'languages': languages
-            }
-        )
-        return JsonResponse({'message': 'User info saved successfully'}, status=200)
+            # Extract fields from the request
+            personal_info = data.get('personalInfo', {})
+            email = personal_info.get('email')
+            full_name = personal_info.get('name', '')
+            phone = personal_info.get('phone', '')
+            address = personal_info.get('address', '')
+            certifications = data.get('certifications', [])
+            achievements = data.get('achievements', [])
+            languages = data.get('languages', [])
+            education = data.get('education', [])
+            projects = data.get('projects', [])
+            experience = data.get('experience', [])
+            skills = data.get('skills', [])
+
+            # Create a new UserInfo record
+            user_info = UserInfo.objects.create(
+                email=email,
+                full_name=full_name,
+                phone=phone,
+                address=address,
+                professional_summary=data.get('professionalSummary', ''),
+                social_links= data.get("socialLinks"),
+                fresher_or_professional=data.get('fresherOrProfessional', ''),
+                education=education,
+                skills=",".join([skill.get('label', '') for skill in skills]),
+                projects=projects,
+                experience=experience,
+                certifications=certifications,
+                achievements=achievements,
+                languages=languages
+            )
+
+            return JsonResponse({'message': 'User info saved successfully'}, status=201)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 def my_view(request):
@@ -84,18 +99,16 @@ def fetch_latest_user_info(request):
             "skills": latest_user.skills.split(",") if latest_user.skills else [],
             "certifications": latest_user.certifications if isinstance(latest_user.certifications, list) else [],
             "achievements": latest_user.achievements if isinstance(latest_user.achievements, list) else [],
-            "languages": latest_user.languages if isinstance(latest_user.languages, list) else []
+            "languages": latest_user.languages if isinstance(latest_user.languages, list) else [],
+            "socialLinks": latest_user.social_links,
+            # Include both projects and experience, regardless of the user type
+            "projects": latest_user.projects if isinstance(latest_user.projects, list) else [],
+            "experience": latest_user.experience if isinstance(latest_user.experience, list) else []
         }
-
-        # Conditionally add projects and experience based on the user type
-        if latest_user.fresher_or_professional == 'fresher':
-            user_data['projects'] = latest_user.projects if isinstance(latest_user.projects, list) else []
-        else:
-            user_data['experience'] = latest_user.experience if isinstance(latest_user.experience, list) else []
 
         logger.debug("User Data being returned: %s", user_data)
         return JsonResponse(user_data, status=200)
     except Exception as e:
         logger.exception("Failed to fetch user info: %s", str(e))
-        return JsonResponse({"error": str(e)}, status=500)   
+        return JsonResponse({"error": str(e)}, status=500)
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { jsPDF } from "jspdf";
+import html2pdf from "html2pdf.js";
 import "./ResumePreview.css"; // Ensure this CSS file is styled to your preference
 
 function ResumePreview() {
@@ -11,14 +11,16 @@ function ResumePreview() {
     const fetchUserData = async () => {
       try {
         const response = await fetch("http://127.0.0.1:8000/resume/fetch-latest-user-info/");
-        if (!response.ok) {
-          throw new Error(`Failed to fetch user data. Status: ${response.status}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUserData(data);
+          setLoading(false);
+        } else {
+          setError("Failed to fetch user data.");
+          setLoading(false);
         }
-        const data = await response.json();
-        setUserData(data);
-        setLoading(false);
       } catch (err) {
-        setError(err.message);
+        setError("Error: " + err.message);
         setLoading(false);
       }
     };
@@ -27,28 +29,28 @@ function ResumePreview() {
   }, []);
 
   const downloadResume = () => {
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: "a4", // Standard A4 size
-    });
-
-    const content = document.querySelector(".resume-container");
+    const element = document.querySelector(".resume-container");
     const downloadButton = document.querySelector(".download-btn");
 
     // Temporarily hide the download button
     downloadButton.style.display = "none";
 
-    pdf.html(content, {
-      callback: (doc) => {
-        doc.save("ATS_Resume.pdf");
-        // Restore the download button after generating the PDF
+    const options = {
+      margin: [10, 10, 10, 10],
+      filename: "ATS_Resume.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
+
+    html2pdf()
+      .set(options)
+      .from(element)
+      .save()
+      .then(() => {
+        // Restore the download button after PDF generation
         downloadButton.style.display = "block";
-      },
-      x: 10,
-      y: 10,
-      html2canvas: { scale: 0.5 }, // Ensures proper scaling for A4
-    });
+      });
   };
 
   if (loading) {
@@ -65,19 +67,28 @@ function ResumePreview() {
 
   return (
     <div className="resume-container">
+      {/* Header Section */}
       <div className="resume-header">
         <h1>{userData.personalInfo?.name || "N/A"}</h1>
         <p>
           {userData.personalInfo?.email || "N/A"} | {userData.personalInfo?.phone || "N/A"} |{" "}
           {userData.personalInfo?.address || "N/A"}
         </p>
+        <p>
+          LinkedIn: {userData.socialLinks?.linkedIn || "N/A"} | GitHub: {userData.socialLinks?.github || "N/A"} | Twitter:{" "}
+          {userData.socialLinks?.twitter || "N/A"}
+        </p>
       </div>
 
+
+
+      {/* Professional Summary */}
       <div className="resume-section">
         <h2>Professional Summary</h2>
         <p>{userData.professionalSummary || "No professional summary provided."}</p>
       </div>
 
+      {/* Education Section */}
       <div className="resume-section">
         <h2>Education</h2>
         <ul>
@@ -93,6 +104,7 @@ function ResumePreview() {
         </ul>
       </div>
 
+      {/* Certifications Section */}
       <div className="resume-section">
         <h2>Certifications</h2>
         <ul>
@@ -108,6 +120,7 @@ function ResumePreview() {
         </ul>
       </div>
 
+      {/* Achievements Section */}
       <div className="resume-section">
         <h2>Achievements</h2>
         <ul>
@@ -123,6 +136,7 @@ function ResumePreview() {
         </ul>
       </div>
 
+      {/* Languages Known Section */}
       <div className="resume-section">
         <h2>Languages Known</h2>
         <ul>
@@ -138,41 +152,41 @@ function ResumePreview() {
         </ul>
       </div>
 
-      {userData.fresherOrProfessional === "fresher" && (
-        <div className="resume-section">
-          <h2>Projects</h2>
-          <ul>
-            {userData.projects && userData.projects.length > 0 ? (
-              userData.projects.map((project, index) => (
-                <li key={index}>
-                  <strong>{project.title}</strong> - {project.duration}
-                  <p>{project.description}</p>
-                </li>
-              ))
-            ) : (
-              <li>No projects listed.</li>
-            )}
-          </ul>
-        </div>
-      )}
+      {/* Projects Section */}
+      <div className="resume-section">
+        <h2>Projects</h2>
+        <ul>
+          {userData.projects && userData.projects.length > 0 ? (
+            userData.projects.map((project, index) => (
+              <li key={index}>
+                <strong>{project.title || "Untitled Project"}</strong> -{" "}
+                {project.duration || "Duration not provided"}
+                <p>{project.description || "No description available."}</p>
+              </li>
+            ))
+          ) : (
+            <li>No projects listed.</li>
+          )}
+        </ul>
+      </div>
 
-      {userData.fresherOrProfessional === "professional" && (
-        <div className="resume-section">
-          <h2>Work Experience</h2>
-          <ul>
-            {userData.experience && userData.experience.length > 0 ? (
-              userData.experience.map((exp, index) => (
-                <li key={index}>
-                  <strong>{exp.role}</strong> at {exp.company} ({exp.duration})
-                </li>
-              ))
-            ) : (
-              <li>No work experience available.</li>
-            )}
-          </ul>
-        </div>
-      )}
+      {/* Work Experience Section */}
+      <div className="resume-section">
+        <h2>Work Experience</h2>
+        <ul>
+          {userData.experience && userData.experience.length > 0 ? (
+            userData.experience.map((exp, index) => (
+              <li key={index}>
+                <strong>{exp.role}</strong> at {exp.company} ({exp.duration})
+              </li>
+            ))
+          ) : (
+            <li>No work experience available.</li>
+          )}
+        </ul>
+      </div>
 
+      {/* Skills Section */}
       <div className="resume-section">
         <h2>Skills</h2>
         <ul className="skills-list">
@@ -184,6 +198,7 @@ function ResumePreview() {
         </ul>
       </div>
 
+      {/* Download Button */}
       <div className="button-container">
         <button className="download-btn" onClick={downloadResume}>
           Download PDF
