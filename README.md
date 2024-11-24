@@ -14,6 +14,15 @@ This project is a Resume Creator designed to generate **ATS-friendly (Applicant 
 
 ---
 
+## Screenshots 
+
+![image](https://github.com/user-attachments/assets/64778c1d-ae28-4adc-ae7a-9e6d3ee0eb51)
+
+![image](https://github.com/user-attachments/assets/bd435599-ec2d-4f0f-90c4-a60444433274)
+
+![image](https://github.com/user-attachments/assets/a01160b8-0d25-43f1-ad42-df447e886d86)
+
+
 ## Requirements
 
 ### Frontend
