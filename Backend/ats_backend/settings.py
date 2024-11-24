@@ -59,6 +59,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'ats_backend.urls'
 
+AUTHENTICATION_BACKENDS = [
+    'djongo.auth.backends.DjongoBackend',
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -84,14 +88,19 @@ WSGI_APPLICATION = 'ats_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'ATSResumeDB',  # MongoDB database name
-        'ENFORCE_SCHEMA': False,
+        'NAME': 'user_info',
         'CLIENT': {
-            'host': 'localhost',
-            'port': 27017,
+            'host': 'mongodb+srv://kavinkavin8466:kavinbox@ats.1rv8j.mongodb.net/',
+            'username': 'kavinkavin8466',
+            'password': 'kavinbox',
+            }
         }
     }
+
+DJONGO_SQL = {
+    "DISABLE_PERMISSIONS": True
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

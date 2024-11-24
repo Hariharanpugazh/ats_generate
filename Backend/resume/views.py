@@ -3,7 +3,47 @@ from django.http import JsonResponse
 from .models import UserInfo
 import json
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.hashers import make_password, check_password
 import logging
+from pymongo import MongoClient
+
+client = MongoClient("mongodb+srv://kavinkavin8466:kavinbox@ats.1rv8j.mongodb.net/")
+db = client.user_info  # Your MongoDB Database Name
+userinfo_collection = db.userinfo  # Collection name
+@csrf_exempt
+def register_user(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')  # Save password as plain text
+
+        # Check if email already exists
+        if userinfo_collection.find_one({'email': email}):
+            return JsonResponse({'error': 'Email already exists'}, status=400)
+
+        # Insert user into collection
+        userinfo_collection.insert_one({
+            'username': username,
+            'email': email,
+            'password': password,
+        })
+
+        return JsonResponse({'message': 'Registration successful'}, status=201)
+
+@csrf_exempt
+def login_user(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+
+        # Check user credentials
+        user = userinfo_collection.find_one({'email': email, 'password': password})
+        if user:
+            return JsonResponse({'message': 'Login successful'}, status=200)
+        else:
+            return JsonResponse({'error': 'Invalid email or password'}, status=401)
 
 
 @csrf_exempt
@@ -78,14 +118,12 @@ logger = logging.getLogger(__name__)
 
 def fetch_latest_user_info(request):
     try:
-        # Fetch the most recently updated user info
         latest_user = UserInfo.objects.order_by('-last_modified').first()
 
         if not latest_user:
-            logger.error("No user data found")
             return JsonResponse({"error": "No user data found"}, status=404)
 
-        # Prepare data ensuring that list fields are properly formatted
+        # Ensure socialLinks are included
         user_data = {
             "personalInfo": {
                 "name": latest_user.full_name,
@@ -94,14 +132,17 @@ def fetch_latest_user_info(request):
                 "address": latest_user.address,
             },
             "professionalSummary": latest_user.professional_summary,
-            "fresherOrProfessional": latest_user.fresher_or_professional,
+            "socialLinks": {
+                "linkedIn": latest_user.social_links.get("linkedIn", ""),
+                "github": latest_user.social_links.get("github", ""),
+                "twitter": latest_user.social_links.get("twitter", ""),
+            },
+            
             "education": latest_user.education if isinstance(latest_user.education, list) else [],
             "skills": latest_user.skills.split(",") if latest_user.skills else [],
             "certifications": latest_user.certifications if isinstance(latest_user.certifications, list) else [],
             "achievements": latest_user.achievements if isinstance(latest_user.achievements, list) else [],
             "languages": latest_user.languages if isinstance(latest_user.languages, list) else [],
-            "socialLinks": latest_user.social_links,
-            # Include both projects and experience, regardless of the user type
             "projects": latest_user.projects if isinstance(latest_user.projects, list) else [],
             "experience": latest_user.experience if isinstance(latest_user.experience, list) else []
         }
@@ -111,4 +152,3 @@ def fetch_latest_user_info(request):
     except Exception as e:
         logger.exception("Failed to fetch user info: %s", str(e))
         return JsonResponse({"error": str(e)}, status=500)
-

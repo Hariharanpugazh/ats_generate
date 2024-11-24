@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
-
+import "./ResumePreview.css";
 // Maximum limits for multiple-input sections
 const MAX_CERTIFICATIONS = 3;
 const MAX_PROJECTS = 3;
 const MAX_ACHIEVEMENTS = 3;
 const MAX_EXPERIENCE = 3;
 const MAX_EDUCATION = 2;
+
+const PROFESSIONAL_SUMMARY_WORD_LIMIT = 35; // Limit for professional summary
+const DESCRIPTION_WORD_LIMIT = 35; // Limit for project and achievement descriptions
+
 
 const skillsOptions = [
   { value: "JavaScript", label: "JavaScript" },
@@ -63,11 +67,20 @@ function ResumeForm() {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  // Fetch data to ensure all items (e.g., projects) are fetched properly
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/resume/fetch-latest-user-info/");
+        // Get the logged-in user's email from local storage or another secure source
+        const loggedInUserEmail = localStorage.getItem("userEmail"); // Assuming you store the email in localStorage
+  
+        if (!loggedInUserEmail) {
+          console.error("No logged-in user email found");
+          return;
+        }
+  
+        // Fetch the user data for the logged-in user
+        const response = await fetch(`http://127.0.0.1:8000/resume/fetch-latest-user-info/?email=${loggedInUserEmail}`
+        );
         if (response.ok) {
           const data = await response.json();
           setFormData((prev) => ({
@@ -81,8 +94,14 @@ function ResumeForm() {
         console.error("Error:", err);
       }
     };
+  
     fetchUserData();
-  }, []);
+  }, []);  
+
+  const limitWords = (text, limit) => {
+    const words = text.split(" ");
+    return words.length > limit ? words.slice(0, limit).join(" ") : text;
+  };
 
   const handleInputChange = (section, key, value) => {
     const updatedData = { ...formData };
@@ -91,11 +110,18 @@ function ResumeForm() {
   };
 
   const handleArrayChange = (section, index, key, value) => {
-    const updatedArray = [...(formData[section] || [])];
+    const updatedArray = [...formData[section]];
+    
+    // Ensure word limit for the description
+    if (key === "description" && value.split(" ").length > 35) {
+      alert("Description cannot exceed 35 words.");
+      return;
+    }
+    
     updatedArray[index][key] = value;
     setFormData({ ...formData, [section]: updatedArray });
   };
-
+  
   const addNewEntry = (section) => {
     const limits = {
       certifications: MAX_CERTIFICATIONS,
@@ -141,6 +167,14 @@ function ResumeForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleProfessionalSummaryChange = (value) => {
+    // Limit professional summary words
+    setFormData({
+      ...formData,
+      professionalSummary: limitWords(value, PROFESSIONAL_SUMMARY_WORD_LIMIT),
+    });
+  };
+
   const resetForm = () => {
     setFormData({
       personalInfo: { name: "", email: "", phone: "", address: "" },
@@ -160,10 +194,6 @@ function ResumeForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (!validateForm()) {
-      return;
-    }
-  
     try {
       const response = await fetch("http://127.0.0.1:8000/resume/save-user-info/", {
         method: "POST",
@@ -175,18 +205,7 @@ function ResumeForm() {
   
       if (response.ok) {
         alert("Form submitted successfully!");
-        setFormData({
-          personalInfo: { name: "", email: "", phone: "", address: "" },
-          socialLinks: { linkedIn: "", github: "", twitter: "" },
-          professionalSummary: "",
-          education: [{ degree: "", institution: "", year: "" }],
-          experience: [{ role: "", company: "", duration: "" }],
-          projects: [{ title: "", description: "", duration: "" }],
-          skills: [],
-          certifications: [{ title: "", date: "" }],
-          achievements: [{ title: "", year: "" }],
-          languages: [{ language: "", proficiency: "" }],
-        }); // Reset formData to initial state
+        resetForm(); // Reset only on success
         navigate("/preview");
       } else {
         const errorData = await response.json();
@@ -194,9 +213,11 @@ function ResumeForm() {
       }
     } catch (error) {
       alert("Error: Unable to submit form. " + error.message);
+    } finally {
+      console.log("Form submission attempted.");
     }
   };
-  
+    
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">ATS Resume Creator</h2>
@@ -257,62 +278,18 @@ function ResumeForm() {
         </div>
       </div>
 
-      {/* Social Links Section */}
+      {/* Professional Summary */}
       <div className="card mb-4 shadow">
-        <div className="card-body">
-          <h3 className="card-title">Social Links</h3>
-          <div className="row">
-            <div className="col-md-4 mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="LinkedIn"
-                value={formData.socialLinks.linkedIn}
-                onChange={(e) =>
-                  handleInputChange("socialLinks", "linkedIn", e.target.value)
-                }
-              />
-            </div>
-            <div className="col-md-4 mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="GitHub"
-                value={formData.socialLinks.github}
-                onChange={(e) =>
-                  handleInputChange("socialLinks", "github", e.target.value)
-                }
-              />
-            </div>
-            <div className="col-md-4 mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Twitter"
-                value={formData.socialLinks.twitter}
-                onChange={(e) =>
-                  handleInputChange("socialLinks", "twitter", e.target.value)
-                }
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-       {/* Professional Summary */}
-       <div className="card mb-4 shadow">
         <div className="card-body">
           <h3 className="card-title">Professional Summary</h3>
           <textarea
             className="form-control"
-            placeholder="Write a brief summary about your professional experience and goals."
+            placeholder={`Write a brief summary (Max ${PROFESSIONAL_SUMMARY_WORD_LIMIT} words)`}
             value={formData.professionalSummary || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, professionalSummary: e.target.value })
-            }
+            onChange={(e) => handleProfessionalSummaryChange(e.target.value)}
           ></textarea>
         </div>
       </div>
-
       {/* Certifications */}
       <div className="card mb-4 shadow">
         <div className="card-body">
@@ -331,7 +308,7 @@ function ResumeForm() {
               <input
                 type="text"
                 className="form-control mt-2"
-                placeholder="Date"
+                placeholder="Date (eg. Jan 2021)"
                 value={cert.date || ""}
                 onChange={(e) =>
                   handleArrayChange("certifications", index, "date", e.target.value)
@@ -356,53 +333,37 @@ function ResumeForm() {
 
       {/* Projects */}
       <div className="card mb-4 shadow">
-        <div className="card-body">
-          <h3 className="card-title">Projects</h3>
-          {formData.projects?.map((project, index) => (
-            <div key={index} className="mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Project Title"
-                value={project.title || ""}
-                onChange={(e) =>
-                  handleArrayChange("projects", index, "title", e.target.value)
-                }
-              />
-              <textarea
-                className="form-control mt-2"
-                placeholder="Description"
-                value={project.description || ""}
-                onChange={(e) =>
-                  handleArrayChange("projects", index, "description", e.target.value)
-                }
-              ></textarea>
-              <input
-                type="text"
-                className="form-control mt-2"
-                placeholder="Duration"
-                value={project.duration || ""}
-                onChange={(e) =>
-                  handleArrayChange("projects", index, "duration", e.target.value)
-                }
-              />
-              <button
-                className="btn btn-danger mt-2"
-                onClick={() => deleteEntry("projects", index)}
-              >
-                Delete Project
-              </button>
+              <div className="card-body">
+                <h3 className="card-title">Projects</h3>
+                {formData.projects?.map((project, index) => (
+                  <div key={index} className="mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Project Title"
+                      value={project.title || ""}
+                      onChange={(e) =>
+                        handleArrayChange("projects", index, "title", e.target.value)
+                      }
+                    />
+                    <textarea
+                      className="form-control mt-2"
+                      placeholder={`Description (Max ${DESCRIPTION_WORD_LIMIT} words)`}
+                      value={project.description || ""}
+                      onChange={(e) =>
+                        handleArrayChange("projects", index, "description", e.target.value)
+                      }
+                    ></textarea>
+                  </div>
+                ))}
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => addNewEntry("projects")}
+                >
+                  Add Project
+                </button>
+              </div>
             </div>
-          ))}
-          <button
-            className="btn btn-secondary"
-            onClick={() => addNewEntry("projects")}
-          >
-            Add Project
-          </button>
-        </div>
-      </div>
-
 
       {/* Achievements */}
       <div className="card mb-4 shadow">
@@ -422,7 +383,7 @@ function ResumeForm() {
               <input
                 type="text"
                 className="form-control mt-2"
-                placeholder="Year"
+                placeholder="Year (eg. Jan 2021)"
                 value={ach.year}
                 onChange={(e) =>
                   handleArrayChange("achievements", index, "year", e.target.value)
@@ -445,46 +406,7 @@ function ResumeForm() {
         </div>
       </div>
 
-      {/* Languages */}
-      <div className="card mb-4 shadow">
-        <div className="card-body">
-          <h3 className="card-title">Languages Known</h3>
-          {formData.languages.map((lang, index) => (
-            <div key={index} className="mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Language"
-                value={lang.language}
-                onChange={(e) =>
-                  handleArrayChange("languages", index, "language", e.target.value)
-                }
-              />
-              <input
-                type="text"
-                className="form-control mt-2"
-                placeholder="Proficiency Level"
-                value={lang.proficiency}
-                onChange={(e) =>
-                  handleArrayChange("languages", index, "proficiency", e.target.value)
-                }
-              />
-              <button
-                className="btn btn-danger mt-2"
-                onClick={() => deleteEntry("languages", index)}
-              >
-                Delete Language
-              </button>
-            </div>
-          ))}
-          <button
-            className="btn btn-secondary"
-            onClick={() => addNewEntry("languages")}
-          >
-            Add Language
-          </button>
-        </div>
-      </div>
+
 
       {/* Work Experience */}
       <div className="card mb-4 shadow">
@@ -513,28 +435,40 @@ function ResumeForm() {
               <input
                 type="text"
                 className="form-control mt-2"
-                placeholder="Duration"
+                placeholder="Duration (eg. Jan 2021 - Dec 2022)"
                 value={exp.duration || ""}
                 onChange={(e) =>
                   handleArrayChange("experience", index, "duration", e.target.value)
                 }
               />
+              <input
+                type="text"
+                className="form-control mt-2"
+                placeholder="Work Description (Max 25 words)"
+                value={formData.experience[index]?.description || ""}
+                onChange={(e) =>
+                  handleArrayChange("experience", index, "description", e.target.value)
+                }
+              />
+              <small className="form-text text-muted">
+
+              </small>
               <button
                 className="btn btn-danger mt-2"
                 onClick={() => deleteEntry("experience", index)}
               >
                 Delete Experience
               </button>
-            </div>
-          ))}
-          <button
-            className="btn btn-secondary"
-            onClick={() => addNewEntry("experience")}
-          >
-            Add Experience
-          </button>
-        </div>
-      </div>
+                          </div>
+                        ))}
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => addNewEntry("experience")}
+                        >
+                          Add Experience
+                        </button>
+                      </div>
+                    </div>
 
       {/* Education */}
       <div className="card mb-4 shadow">
@@ -563,7 +497,7 @@ function ResumeForm() {
               <input
                 type="text"
                 className="form-control mt-2"
-                placeholder="Year"
+                placeholder="Year (eg. Jan 2021 - Jan 2025)"
                 value={edu.year || ""}
                 onChange={(e) =>
                   handleArrayChange("education", index, "year", e.target.value)
@@ -598,6 +532,11 @@ function ResumeForm() {
             placeholder="Select your skills"
           />
         </div>
+      </div>
+      <div className="text-center">
+        <button className="btn btn-secondary btn-lg" onClick={resetForm}>
+          Reset Form
+        </button>
       </div>
 
       {/* Submit Button */}

@@ -18,7 +18,5 @@ class UserInfo(models.Model):
     languages = models.JSONField()
     last_modified = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.full_name
-
-
