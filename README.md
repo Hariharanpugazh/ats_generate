@@ -23,8 +23,11 @@ This project is a Resume Creator designed to generate **ATS-friendly (Applicant 
 ### Backend
 - Python (3.10 or higher)
 - Virtual environment (`venv`)
-- Django (latest stable version)
-- pymongo (to connect to MongoDB Atlas)
+- Django (3.2)
+- pymongo (3.11.4)
+- djongo (1.3.6)
+- djangorestframework (3.12.4)
+- dnspython (2.7.0)
 - MongoDB Atlas account and cluster setup
 
 ---
